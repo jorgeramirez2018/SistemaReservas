@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar código del repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Ver qué evento lo disparó
         run: echo "Este flujo se ejecutó debido al evento -> ${{ github.event_name }}"
@@ -21,7 +21,7 @@ jobs:
           echo "Este archivo fue generado automáticamente por GitHub Actions" > artefactos_salida/resultado.txt
 
       - name: Subir el artefacto al almacenamiento de GitHub
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mi-artefacto-web
           path: artefactos_salida/
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar el artefacto en el nuevo trabajo
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mi-artefacto-web
           path: artefactos_salida
