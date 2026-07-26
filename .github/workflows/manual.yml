@@ -1,0 +1,68 @@
+name: CI/CD Demo Workflow
+
+# 1. Identificar los desencadenadores (Triggers)
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [ opened, synchronize, review_requested ]
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
+
+jobs:
+  # Trabajo 1: Compilación y almacenamiento de artefactos
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Show event trigger
+        run: echo "Este flujo fue disparado por el evento -> ${{ github.event_name }}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Create a dummy public directory and file for artifact test
+        run: |
+          mkdir -p public
+          echo "Hola desde la compilación de GitHub Actions" > public/index.html
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: webpack-artifacts
+          path: public/
+
+  # Trabajo 2: Pruebas que dependen del trabajo de compilación (Usa el artefacto)
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: webpack-artifacts
+          path: public
+
+      - name: Verify artifact contents
+        run: |
+          echo "Verificando que el artefacto llegó correctamente:"
+          cat public/index.html
+
+  # Trabajo 3: Automatización de etiquetas en Pull Requests
+  label-PR:
+    runs-on: ubuntu-latest
+    # Este paso solo tiene sentido que corra si el evento fue una Pull Request
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Label when approved
+        uses: pullreminders/label-when-approved-action@main
+        env:
+          APPROVALS: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ADD_LABEL: "approved"
