@@ -1,0 +1,46 @@
+name: Ejercicio de Variables y Contextos
+
+on:
+  workflow_dispatch: # Lo ejecutaremos de forma manual desde Actions
+
+# 1. ÁMBITO GLOBAL: Variable para todo el flujo
+env:
+  EMPRESA: Grupo Bolívar
+  AMBIENTE: Desarrollo
+
+jobs:
+  analizar_entorno:
+    runs-on: ubuntu-latest
+    
+    # 2. ÁMBITO DE TRABAJO (Job): Variable exclusiva para este trabajo
+    env:
+       ROL_ACTUAL: Desarrollador Full Stack
+
+    steps:
+      - name: Descargar código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Usar contextos de GitHub en la consola
+        run: |
+          echo "--- INFORMACIÓN DEL CONTEXTO GITHUB Y RUNNER ---"
+          echo "Usuario que disparó el flujo: ${{ github.actor }}"
+          echo "Rama actual: ${{ github.ref_name }}"
+          echo "Sistema operativo del ejecutor: ${{ runner.os }}"
+
+      - name: Usar variables de entorno de diferentes ámbitos
+        # 3. ÁMBITO DE PASO (Step): Variable exclusiva para este paso
+        env:
+          TECNOLOGIA: Spring Boot y PostgreSQL
+        run: |
+          echo "--- PROBANDO ÁMBITOS DE VARIABLES ---"
+          echo "Hola, trabajo como $ROL_ACTUAL en $EMPRESA."
+          echo "Actualmente estoy programando con $TECNOLOGIA en un ambiente de $AMBIENTE."
+
+      - name: Crear una variable dinámica entre pasos
+        run: |
+          echo "ESTADO_TAREA=Completado con éxito" >> $GITHUB_ENV
+
+      - name: Consumir la variable dinámica en el siguiente paso
+        run: |
+          echo "--- VERIFICANDO VARIABLE DINÁMICA ---"
+          echo "El estado de la tarea anterior es: $ESTADO_TAREA"
